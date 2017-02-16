@@ -1,0 +1,6 @@
+[submodule "joseki"]
+	path = joseki
+	url = https://github.com/JamesMoulang/joseki
+[submodule "app/joseki"]
+	path = app/joseki
+	url = https://github.com/JamesMoulang/joseki
