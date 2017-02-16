@@ -12,6 +12,8 @@ const CIRCLE_STATES = {
 class Main extends Joseki.State {
 	constructor() {
 		super('main');
+		this.inhaleStartTime = -1;
+		this.mouseWasDown = false;
 		this.central = null;
 		this.outline = null;
 		this.currentState = null;
@@ -89,6 +91,7 @@ class Main extends Joseki.State {
 			);
 			this.game.entities.push(this.outline);
 		}
+		this.outline.anticlockwise = false;
 		this.outline.startArc = -Math.PI * 0.5;
 		this.outline.endArc = -Math.PI * 0.5;
 		this.outlineLength = 0;
@@ -103,13 +106,33 @@ class Main extends Joseki.State {
 		const distance = this.game.mousePos.distance(this.outline.position);
 		if (distance < this.outline.radius) {
 			if (!this.game.mousedown) {
+				this.mouseWasDown = false;
 				this.central.radius = Maths.lerp(
 					this.central.radius,
 					0.1,
 					16
 				);
 			} else {
-				
+				if (!this.mouseWasDown) {
+					this.mouseWasDown = true;
+					this.inhaleStartTime = this.game.timestamp();
+					console.log(this.inhaleStartTime);
+				}
+
+				const completion = Maths.clamp(
+					(this.game.timestamp() - this.inhaleStartTime) / 4000,
+					0,
+					1
+				);
+				this.central.radius = Maths.lerp(
+					16,
+					completion,
+					192
+				);
+
+				if (completion === 1) {
+					this.switchState(CIRCLE_STATES.HOLD);
+				}
 			}
 		} else {
 			this.central.radius = Maths.lerp(
@@ -124,10 +147,22 @@ class Main extends Joseki.State {
 	}
 
 	holdEnter() {
-
+		this.outline.startArc = Math.PI * 1.5;
+		this.outline.endArc = this.outline.startArc - Math.PI * 2;
+		this.outline.anticlockwise = true;
 	}
 	holdUpdate() {
-
+		const completion = Maths.clamp(
+			(this.game.timestamp() - this.stateStartTime) / 7000,
+			0,
+			1
+		);
+		console.log(completion);
+		this.outline.endArc = this.outline.startArc - Math.PI * 2 * (1-completion);
+		if (!this.game.mousedown) {
+			this.mouseWasDown = false;
+			this.switchState(CIRCLE_STATES.OUT);
+		}
 	}
 	holdExit() {
 
@@ -137,7 +172,21 @@ class Main extends Joseki.State {
 
 	}
 	outUpdate() {
+		this.outline.endArc = Maths.lerp(
+			this.outline.endArc,
+			0.1,
+			this.outline.startArc
+		);
 
+		const completion = Maths.clamp(
+			(this.game.timestamp() - this.stateStartTime) / 8000,
+			0,
+			1
+		);
+		this.central.radius = 192 - completion * 192;
+		if (this.game.mousedown || completion === 1) {
+			this.switchState(CIRCLE_STATES.IN);
+		}
 	}
 	outExit() {
 
