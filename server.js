@@ -7,8 +7,6 @@ var uid = require('uid');
 var _ = require('underscore');
 var app = express();
 var compiler = webpack(config);
-var Player = require('./player');
-var Room = require('./room');
 
 app.use(require('webpack-dev-middleware')(compiler, {
   noInfo: true,
