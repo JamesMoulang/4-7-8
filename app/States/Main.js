@@ -247,14 +247,20 @@ class Main extends Joseki.State {
 		this.outline.startArc = Math.PI * 1.5;
 		this.outline.endArc = this.outline.startArc - Math.PI * 2;
 		this.outline.anticlockwise = true;
+		this.comp = 0;
 	}
 	holdUpdate() {
-		const completion = Maths.clamp(
+		let completion = Maths.clamp(
 			(this.game.timestamp() - this.stateStartTime) / 7000,
 			0,
 			1
 		);
-		this.outline.endArc = this.outline.startArc - Math.PI * 2 * (1-completion);
+		completion = Math.ceil(completion/(1/7)) * (1/7);
+		this.comp = Maths.lerp(this.comp, 0.05, completion);
+		if (this.comp > 0.999) {
+			this.comp = 1;
+		}
+		this.outline.endArc = this.outline.startArc - Math.PI * 2 * (1-this.comp);
 		if (!this.game.mousedown) {
 			this.mouseWasDown = false;
 			this.switchState(CIRCLE_STATES.OUT);
