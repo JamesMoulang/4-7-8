@@ -26,6 +26,7 @@
     "eventsource-polyfill": "^0.9.6",
     "express": "^4.13.4",
     "fs": "0.0.1-security",
+    "howler": "^2.0.2",
     "uid": "0.0.2",
     "underscore": "^1.8.3",
     "webpack": "^1.13.0",

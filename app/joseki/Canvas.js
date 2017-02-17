@@ -1,8 +1,9 @@
 import Vector from './Vector';
 
 class Canvas {
-	constructor(parent, zIndex, id, padding=32, gameWidth=1024, gameHeight=1024) {
+	constructor(game, parent, zIndex, id, padding=32, gameWidth=1024, gameHeight=1024) {
 		var div = document.getElementById(parent);
+		this.game = game;
 		this.scale = 1;
 		this.padding = padding;
 		this.gameWidth = gameWidth;
@@ -54,6 +55,24 @@ class Canvas {
 		this.ctx.fillStyle = this.backgroundColour;
 		this.ctx.globalAlpha = 1;
 		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+	}
+
+	drawSprite(__pos, key, width=128, height=128, _anchor=new Vector(0.5, 0.5), alpha=1) {
+		var anchor = new Vector(
+			_anchor.x * width,
+			_anchor.y * height
+		);
+		var _pos = __pos.minus(anchor);
+		var pos = this.topLeft.add(_pos.times(this.scale));
+
+		this.ctx.globalAlpha = alpha;
+		this.ctx.drawImage(
+			this.game.getImage(key),
+			pos.x,
+			pos.y,
+			width * this.scale,
+			height * this.scale
+		);
 	}
 
 	drawCircle(_pos, radius=128, fillStyle, strokeStyle, fillAlpha=1, strokeAlpha=1, startArc=0, endArc=2*Math.PI, anticlockwise=false) {

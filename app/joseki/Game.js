@@ -24,12 +24,43 @@ class Game {
 		this.canvasIndex = 0;
 		this.mousePos = new Vector(0, 0);
 		this.mousedown = false;
+		this.images = {};
+		this.imagesLoading = 0;
 		window.onresize = this.resizeCanvases.bind(this);
 		document.onmouseover = this.onmousemove.bind(this);
 		document.onmousemove = this.onmousemove.bind(this);
 		document.onclick = this.onmouseclick.bind(this);
 		document.onmousedown = this.onmousedown.bind(this);
 		document.onmouseup = this.onmouseup.bind(this);
+		document.ontouchstart = this.onmousedown.bind(this);
+	}
+	
+	loadAudio(key, src) {
+		const img = new Image();
+		img.src = src;
+		this.images[key] = img;
+		this.imagesLoading++;
+		img.onload = () => {
+			this.imagesLoading--;
+		}
+	}
+
+	getAudio(key) {
+		return this.images[key];
+	}
+
+	loadImage(key, src) {
+		const img = new Image();
+		img.src = src;
+		this.images[key] = img;
+		this.imagesLoading++;
+		img.onload = () => {
+			this.imagesLoading--;
+		}
+	}
+
+	getImage(key) {
+		return this.images[key];
 	}
 
 	start(key) {
@@ -102,7 +133,7 @@ class Game {
 	}
 
 	createCanvas(key) {
-		var canvas = new Canvas(this.parentID, this.canvasIndex, key, this.gamePadding, this.gameWidth, this.gameHeight);
+		var canvas = new Canvas(this, this.parentID, this.canvasIndex, key, this.gamePadding, this.gameWidth, this.gameHeight);
 		canvas.backgroundColour = this.backgroundColour;
 		this.canvasIndex++;
 		this.canvases.push(canvas);
@@ -118,7 +149,11 @@ class Game {
 
 	//Mouse input
 	onmousemove(event) {
-		this.mousePos = this.getCanvas('game').screenToWorld(event.clientX, event.clientY);
+		if (event.touches) {
+			this.mousePos = this.getCanvas('game').screenToWorld(event.touches[0].clientX, event.touches[0].clientY);
+		} else {
+			this.mousePos = this.getCanvas('game').screenToWorld(event.clientX, event.clientY);
+		}
 	}
 	onmouseclick() {
 

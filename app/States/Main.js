@@ -2,6 +2,8 @@ import Joseki from '../joseki';
 import Circle from '../joseki/Entities/Shapes/Circle';
 import Vector from '../joseki/Vector';
 import Maths from '../joseki/Maths';
+import Sprite from '../joseki/Entities/Sprite';
+import Audio from '../joseki/Audio';
 
 const CIRCLE_STATES = {
 	IN: 'IN',
@@ -12,6 +14,9 @@ const CIRCLE_STATES = {
 class Main extends Joseki.State {
 	constructor() {
 		super('main');
+		this.mouseSprite = null;
+		this.mouseHintShowing = false;
+		this.clickedOnce = false;
 		this.inhaleStartTime = -1;
 		this.mouseWasDown = false;
 		this.central = null;
@@ -41,6 +46,10 @@ class Main extends Joseki.State {
 
 	enter(game) {
 		super.enter(game);
+		this.pivot = new Vector(
+			this.game.width*0.5,
+			this.game.height*0.5
+		);
 		this.switchState(CIRCLE_STATES.IN);
 	}
 
@@ -62,15 +71,54 @@ class Main extends Joseki.State {
 		}
 	}
 
+	boop() {
+		if (this.boopCircle === null) {
+			this.boopCircle = new Circle(
+				this.game,
+				'game',
+				this.pivot,
+				192,
+				undefined,
+				'#F0EBD8',
+				0,
+				1,
+			);
+			this.game.entities.push(this.boopCircle);
+			console.log("boop");
+
+			// Show the mouse thing
+			if (!this.clickedOnce) {
+				if (this.mouseSprite === null) {
+					this.mouseSprite = new Sprite(
+						this.game, 
+						'game', 
+						new Vector(
+							this.game.width * 0.5,
+							this.game.height * 0.5 + 192 + 256
+						), 
+						'mouse',
+						322 * 0.25, 
+						472 * 0.25,
+						undefined,
+						0
+					);
+					this.game.entities.push(this.mouseSprite);
+				}
+			}
+		} else {
+			this.boopCircle.radius = 192;
+			this.boopCircle.strokeAlpha = 1;
+		}
+
+		this.boopTime = this.game.timestamp() + 6000;
+	}
+
 	inEnter() {
 		if (this.central === null) {
 			this.central = new Circle(
 				this.game,
 				'game',
-				new Vector(
-					this.game.width*0.5,
-					this.game.height*0.5
-				), 
+				this.pivot, 
 				4,
 				'#3E5C76'
 			);
@@ -81,10 +129,7 @@ class Main extends Joseki.State {
 			this.outline = new Circle(
 				this.game,
 				'game',
-				new Vector(
-					this.game.width*0.5,
-					this.game.height*0.5
-				), 
+				this.pivot, 
 				192,
 				undefined,
 				'#F0EBD8'
@@ -95,15 +140,61 @@ class Main extends Joseki.State {
 		this.outline.startArc = -Math.PI * 0.5;
 		this.outline.endArc = -Math.PI * 0.5;
 		this.outlineLength = 0;
+		this.boopTime = this.game.timestamp() + 4000;
+		this.boopCircle = null;
 	}
 	inUpdate() {
-		this.outlineLength = Maths.towardsValue(
-			0,
-			(this.game.timestamp() - this.stateStartTime) * 0.005,
-			2 * Math.PI
-		);
+		if (this.boopCircle !== null) {
+			if (this.boopCircle.strokeAlpha > 0) {
+				this.boopCircle.strokeAlpha = Maths.towardsValue(
+					this.boopCircle.strokeAlpha,
+					this.game.delta * 0.02,
+					0
+				);
+				this.boopCircle.radius += this.game.delta * 2;
+			}
+		}
+
+		if (this.game.timestamp() - this.stateStartTime > 250) {
+			this.outlineLength = Maths.lerp(
+				this.outlineLength,
+				0.1,
+				2 * Math.PI
+			);
+		}
 		this.outline.endArc = this.outline.startArc + this.outlineLength;
-		const distance = this.game.mousePos.distance(this.outline.position);
+		const toMouse = this.game.mousePos.minus(this.pivot);
+		const distance = toMouse.magnitude();
+		if (!this.game.mousedown && 
+			this.game.mousePos.magnitude() !== 0 &&
+			distance > this.outline.radius) {
+			this.central.position = this.central.position.lerp(
+				this.pivot.add(toMouse.normalised().times(32)),
+				0.1
+			);
+		} else {
+			this.central.position = this.central.position.lerp(
+				this.pivot,
+				0.1
+			);
+		}
+
+		if (this.mouseSprite !== null) {
+			if (this.clickedOnce) {
+				this.mouseSprite.alpha = Maths.towardsValue(
+					this.mouseSprite.alpha,
+					this.game.delta * 0.05,
+					0
+				);
+			} else {
+				this.mouseSprite.alpha = Maths.towardsValue(
+					this.mouseSprite.alpha,
+					this.game.delta * 0.01,
+					1
+				);
+			}
+		}
+
 		if (distance < this.outline.radius) {
 			if (!this.game.mousedown) {
 				this.mouseWasDown = false;
@@ -114,7 +205,9 @@ class Main extends Joseki.State {
 				);
 			} else {
 				if (!this.mouseWasDown) {
+					// Audio.play('reverse');
 					this.mouseWasDown = true;
+					this.clickedOnce = true;
 					this.inhaleStartTime = this.game.timestamp();
 					console.log(this.inhaleStartTime);
 				}
@@ -135,6 +228,10 @@ class Main extends Joseki.State {
 				}
 			}
 		} else {
+			if (this.game.timestamp() > this.boopTime) {
+				this.boop();
+			}
+
 			this.central.radius = Maths.lerp(
 				this.central.radius,
 				0.1,
@@ -157,7 +254,6 @@ class Main extends Joseki.State {
 			0,
 			1
 		);
-		console.log(completion);
 		this.outline.endArc = this.outline.startArc - Math.PI * 2 * (1-completion);
 		if (!this.game.mousedown) {
 			this.mouseWasDown = false;
@@ -172,6 +268,7 @@ class Main extends Joseki.State {
 
 	}
 	outUpdate() {
+		// Audio.play('forward', 0.25);
 		this.outline.endArc = Maths.lerp(
 			this.outline.endArc,
 			0.1,
