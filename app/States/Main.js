@@ -22,6 +22,7 @@ class Main extends Joseki.State {
 		this.central = null;
 		this.outline = null;
 		this.currentState = null;
+		this.infoShowing = false;
 		this.circleStates = {
 			IN: {
 				key: CIRCLE_STATES.IN,
@@ -44,6 +45,14 @@ class Main extends Joseki.State {
 		}
 	}
 
+	clickInfo() {
+		this.infoShowing = !this.infoShowing;
+		this.info.width = this.info.height = this.info.width * 0.8;
+		if (this.infoShowing) {
+			this.switchState(CIRCLE_STATES.IN);
+		}
+	}
+
 	enter(game) {
 		super.enter(game);
 		this.pivot = new Vector(
@@ -51,12 +60,60 @@ class Main extends Joseki.State {
 			this.game.height*0.5
 		);
 		this.switchState(CIRCLE_STATES.IN);
+
+		this.info = new Sprite(
+			this.game, 
+			'game', 
+			new Vector(
+				this.game.width-64,
+				64
+			), 
+			'info',
+			64, 
+			64,
+			undefined,
+			1
+		);
+		this.game.entities.push(this.info);
+
+		this.infoSheet = new Sprite(
+			this.game, 
+			'game', 
+			new Vector(
+				this.game.width * 0.5,
+				this.game.height * 0.5
+			), 
+			'infoSheet',
+			512*1.5, 
+			320*1.5,
+			undefined,
+			0
+		);
+		this.game.entities.push(this.infoSheet);
 	}
 
 	update() {
-		if (this.currentState !== null) {
+		if (this.currentState !== null && !this.infoShowing) {
 			this.currentState.update();
 		}
+
+		if ((this.game.mouseclicked && 
+			this.game.mousePos.distance(this.info.position) < this.info.width * 0.5) ||
+			(this.infoShowing && this.game.mouseclicked)) {
+			this.clickInfo();
+		}
+
+		this.info.width = this.info.height = Maths.lerp(
+			this.info.width,
+			0.1,
+			64
+		);
+
+		this.infoSheet.alpha = Maths.lerp(
+			this.infoSheet.alpha,
+			0.1,
+			this.infoShowing ? 1 : 0
+		);
 	}
 
 	switchState(key) {

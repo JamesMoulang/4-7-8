@@ -10,6 +10,8 @@ class Preload extends Joseki.State {
 	enter(game) {
 		super.enter(game);
 		this.game.loadImage('mouse', '/mouse.png');
+		this.game.loadImage('info', '/info.png');
+		this.game.loadImage('infoSheet', '/infoSheet.png');
 		Audio.load('forward', '/forward.wav');
 		Audio.load('reverse', '/reverse.wav');
 		this.game.createCanvas('game');

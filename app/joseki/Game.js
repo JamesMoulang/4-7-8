@@ -24,6 +24,7 @@ class Game {
 		this.canvasIndex = 0;
 		this.mousePos = new Vector(0, 0);
 		this.mousedown = false;
+		this.mouseclicked = false;
 		this.images = {};
 		this.imagesLoading = 0;
 		window.onresize = this.resizeCanvases.bind(this);
@@ -114,6 +115,7 @@ class Game {
 			});
 			this.justDestroyed = false;
 		}
+		this.mouseclicked = false;
 	}
 
 	setBackgroundColour(colour) {
@@ -156,7 +158,7 @@ class Game {
 		}
 	}
 	onmouseclick() {
-
+		this.mouseclicked = true;
 	}
 	onmousedown() {
 		this.mousedown = true;
