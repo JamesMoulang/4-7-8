@@ -5,11 +5,12 @@ import Canvas from './Canvas';
 import Vector from './Vector';
 
 class Game {
-	constructor(parentID, states, fps=30) {
+	constructor(parentID, states, fps=30, width = 1024, height = 1024) {
 		this.parentID = parentID;
+		this.parent = document.getElementById(this.parentID);
 		this.gamePadding = 64;
-		this.width = 1024;
-		this.height = 1024;
+		this.width = width;
+		this.height = height;
 
 		this.fps = fps;
 		this.timeScaleFPS = 30;
@@ -151,10 +152,17 @@ class Game {
 
 	//Mouse input
 	onmousemove(event) {
+		var rect = this.parent.getBoundingClientRect();
 		if (event.touches) {
-			this.mousePos = this.getCanvas('game').screenToWorld(event.touches[0].clientX, event.touches[0].clientY);
+			this.mousePos = this.getCanvas('game').screenToWorld(
+				event.touches[0].clientX - rect.left,
+				event.touches[0].clientY - rect.top
+			);
 		} else {
-			this.mousePos = this.getCanvas('game').screenToWorld(event.clientX, event.clientY);
+			this.mousePos = this.getCanvas('game').screenToWorld(
+				event.clientX - rect.left,
+				event.clientY - rect.top
+			);
 		}
 	}
 	onmouseclick() {

@@ -23,8 +23,9 @@ class Canvas {
 	}
 
 	resize() {
-		this.canvas.width = window.innerWidth;
-		this.canvas.height = window.innerHeight;
+		const root = this.game.parent;
+		this.canvas.width = root.clientWidth;
+  		this.canvas.height = root.clientHeight;
 
 		// Right.
 		// padding is the actual screen padding. So how much space do we have to work with that isn't that?
@@ -45,8 +46,8 @@ class Canvas {
 			this.scale = pixelGameHeight / this.gameHeight;
 		}
 
-		var x = (window.innerWidth - pixelGameWidth) * 0.5;
-		var y = (window.innerHeight - pixelGameHeight) * 0.5;
+		var x = (root.clientWidth - pixelGameWidth) * 0.5;
+		var y = (root.clientHeight - pixelGameHeight) * 0.5;
 
 		this.topLeft = new Vector(x, y);
 	}

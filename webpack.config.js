@@ -23,6 +23,15 @@ module.exports = {
         test: /\.jsx?$/,
         loaders: ['babel'],
         include: path.join(__dirname, 'app')
+      },
+      {
+        test: /\.js/,
+        loader: 'string-replace',
+        query: {
+          search: '$assets',
+          replace: './assets'
+        },
+        include: path.join(__dirname, 'app')
       }
     ]
   }

@@ -3,7 +3,7 @@ import States from './States';
 
 class Game extends Joseki.Game {
 	constructor() {
-		super('root', States, 60, 1024, 768);
+		super('root', States, 60);
 		this.backgroundColour = '#0D1321';
 	}
 }

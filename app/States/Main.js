@@ -55,6 +55,8 @@ class Main extends Joseki.State {
 
 	enter(game) {
 		super.enter(game);
+		window.game_initFullscreenListener(this.game.parentID);
+		window.game_resizeCallback = this.game.resizeCanvases.bind(this.game);
 		this.pivot = new Vector(
 			this.game.width*0.5,
 			this.game.height*0.5
@@ -141,7 +143,6 @@ class Main extends Joseki.State {
 				1,
 			);
 			this.game.entities.push(this.boopCircle);
-			console.log("boop");
 
 			// Show the mouse thing
 			if (!this.clickedOnce) {
@@ -266,7 +267,6 @@ class Main extends Joseki.State {
 					this.mouseWasDown = true;
 					this.clickedOnce = true;
 					this.inhaleStartTime = this.game.timestamp();
-					console.log(this.inhaleStartTime);
 				}
 
 				const completion = Maths.clamp(
